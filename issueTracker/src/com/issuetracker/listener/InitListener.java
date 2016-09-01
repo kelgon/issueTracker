@@ -160,7 +160,7 @@ public class InitListener implements ServletContextListener {
 		    		.withSchedule(CronScheduleBuilder.cronSchedule(reportJobCron)).build();
 		    sched.scheduleJob(reportJob, reportJobTrigger);
 		    JobDetail remindJob = JobBuilder.newJob(RemindJob.class).withIdentity("RemindJob", "group1").build();
-		    String remindJobCron = "10 43 15 * * ?";
+		    String remindJobCron = "0 0 10 * * ?";
 		    CronTrigger remindJobTrigger = (CronTrigger)TriggerBuilder.newTrigger().withIdentity("RemindJobTrigger", "group1")
 		    		.withSchedule(CronScheduleBuilder.cronSchedule(remindJobCron)).build();
 		    sched.scheduleJob(remindJob, remindJobTrigger);

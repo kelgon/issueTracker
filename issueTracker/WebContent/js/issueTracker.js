@@ -196,19 +196,21 @@ function createIssue() {
 	var remindFreq = $("input[name='remindFreqN']");
 	var deadline = $("#deadLineN");
 	var issueDetail = $("textarea[name='issueDetailN']");
+	var reg = new RegExp(/^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9]+[\)]$/, "g");
 	var valid = true;
+	if(owner.val().match(reg) == null) {
+		owner.parent().addClass("has-error");
+		$("#createmsg").html("请使用自动完成功能填写负责人，不要手工填写");
+		$("#createmsg").show();
+		valid = false;
+	}
 	if(issueTitle.val() == "") {
-		issueTitle.parent().toggleClass("has-error");
+		issueTitle.parent().addClass("has-error");
 		issueTitle.attr("placeholder","请填写");
 		valid = false;
 	}
-	if(owner.val() == "") {
-		owner.parent().toggleClass("has-error");
-		owner.attr("placeholder","请填写");
-		valid = false;
-	}
 	if(deadline.val() == "") {
-		deadline.parent().toggleClass("has-error");
+		deadline.parent().addClass("has-error");
 		deadline.attr("placeholder","请填写");
 		valid = false;
 	}

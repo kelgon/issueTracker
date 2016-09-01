@@ -17,27 +17,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public class NoticeUtil {
 	private static final Logger log = Logger.getLogger(NoticeUtil.class);
-
-	public static void sendEmail2(String[] receivers, String[] copies, String title, String content) throws Exception {
-		String rs = "";
-		String cs = "";
-		for(String r : receivers) {
-			rs += r +"; ";
-		}
-		if(copies != null)
-			for(String c : copies) {
-				cs += c +"; ";
-			}
-		log.info("发送邮件，收件人："+rs);
-		log.info("抄送："+cs);
-		log.info("标题："+title);
-		log.info("内容：\r\n"+content);
-	}
-
-	public static boolean sendSMS2(String phone, String msg) throws Exception {
-		log.info("向"+phone+"发送短信："+msg);
-		return true;
-	}
 	
 	public static void sendEmail(String[] receivers, String[] copies, String title, String content) throws Exception {
 		Email email = new SimpleEmail();
@@ -78,5 +57,26 @@ public class NoticeUtil {
 	    		return true;
 	    	}
 	    }
+	}
+	
+	public static void sendEmail2(String[] receivers, String[] copies, String title, String content) throws Exception {
+		String rs = "";
+		String cs = "";
+		for(String r : receivers) {
+			rs += r +"; ";
+		}
+		if(copies != null)
+			for(String c : copies) {
+				cs += c +"; ";
+			}
+		log.info("发送邮件，收件人："+rs);
+		log.info("抄送："+cs);
+		log.info("标题："+title);
+		log.info("内容：\r\n"+content);
+	}
+
+	public static boolean sendSMS2(String phone, String msg) throws Exception {
+		log.info("向"+phone+"发送短信："+msg);
+		return true;
 	}
 }
