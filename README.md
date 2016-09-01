@@ -1,0 +1,14 @@
+# issueTracker
+
+issueTracker是一个轻量级的任务管理系统。具备任务分配、追踪、提醒等能力。
+
+issueTracker使用MongoDB作为数据的持久化端，推荐使用3.2以上版本的社区版MongoDB。
+可以部署于任意的JSP容器中，但请确保其至少支持1.7版本的Java运行环境。
+
+issueTracker的短信发送能力基于luosimao提供的短信平台，如需使用其他平台请改造NoticeUtil类
+issueTracker的短信发送、Email发送全部使用异步线程完成，为了方便，短信发送和Email发送的线程是在JSP容器中启动的，如果想要以独立的java进程启动，也可以将相关的类打成单独的jar包运行
+
+
+issueTracker目前只有适用于PC和pad浏览器的portal，适用于手机的portal在开发中。
+
+
