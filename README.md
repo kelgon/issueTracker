@@ -10,6 +10,4 @@ issueTracker的短信发送能力基于luosimao提供的短信平台，如需使
 
 issueTracker的短信发送、Email发送全部使用异步线程完成，为了方便，短信发送和Email发送的线程是在JSP容器中启动的，如果想要以独立的java进程启动，也可以将相关的类打成单独的jar包运行
 
-issueTracker目前只有适用于PC和pad浏览器的portal，适用于手机的portal在开发中。
-
-
+issueTracker的页面可以适配各种宽度的设备
