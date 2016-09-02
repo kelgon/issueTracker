@@ -196,7 +196,7 @@ function createIssue() {
 	var remindFreq = $("input[name='remindFreqN']");
 	var deadline = $("#deadLineN");
 	var issueDetail = $("textarea[name='issueDetailN']");
-	var reg = new RegExp(/^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9]+[\)]$/, "g");
+	var reg = new RegExp("^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9]+[\)]$", "g");
 	var valid = true;
 	if(owner.val().match(reg) == null) {
 		owner.parent().addClass("has-error");
