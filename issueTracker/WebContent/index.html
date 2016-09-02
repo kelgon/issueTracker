@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Issue Tracker</title>
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet">
@@ -36,7 +37,7 @@
 						<!-- <li><a href="#">分组管理</a></li> -->
 					</ul>
 				</div>
-				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" id="form">
+				<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main" style="padding-left:20px;padding-right:20px">
 					<!-- <div class="row" style="padding: 5px 0px">
 						<div class="col-md-2" style="padding:0px 3px"><input type="text" class="form-control" name="creatorS" placeholder="提出人"/></div>
 						<div class="col-md-2" style="padding:0px 3px"><input type="text" class="form-control" name="ownerS" placeholder="责任人"/></div>
@@ -52,12 +53,22 @@
 						<div class="col-md-3" style="padding:0px 3px"><input type="text" class="form-control" name="issueTitleS" placeholder="事项简述"></div>
 						<div class="col-md-1" style="padding:0px 3px"><button type="button" class="btn btn-success" id="searchBtn">检索事项</button></div>
 					</div> -->
-					<div class="row" style="padding: 5px">
-						<button type="button" class="btn btn-success" id="getAllBtn">全部事项</button>
-						<button type="button" class="btn btn-primary" id="getCreatedBtn">我创建的</button>
-						<button type="button" class="btn btn-primary" id="getOwnedBtn">我负责的</button>
-						<button type="button" class="btn btn-primary" id="getFollowedBtn">我关注的</button>
-						<button type="button" class="btn btn-warning" id="newIssueBtn">新建事项</button>
+					<div class="row">
+						<div class="col-md-1 col-xs-3" style="padding:2px">
+							<button type="button" class="btn btn-success btn-block" id="getAllBtn">全部事项</button>
+						</div>
+						<div class="col-md-1 col-xs-3" style="padding:2px">
+							<button type="button" class="btn btn-primary btn-block" id="getCreatedBtn">我创建的</button>
+						</div>
+						<div class="col-md-1 col-xs-3" style="padding:2px">
+							<button type="button" class="btn btn-primary btn-block" id="getOwnedBtn">我负责的</button>
+						</div>
+						<div class="col-md-1 col-xs-3" style="padding:2px">
+							<button type="button" class="btn btn-primary btn-block" id="getFollowedBtn">我关注的</button>
+						</div>
+						<div class="col-md-1 col-xs-3" style="padding:2px">
+							<button type="button" class="btn btn-warning btn-block" id="newIssueBtn">新建事项</button>
+						</div>
 					</div>
 				</div>
 				<div class="col-md-10 col-md-offset-2" style="height:370px;overflow-y:scroll;padding-right:0">
@@ -123,9 +134,9 @@
 						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						<h4 class="modal-title">新建事项</h4>
 					</div>
-					<div class="modal-body">
+					<div class="modal-body" style="padding:15px 30px">
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">事项标题</span>
 									<input type="text" class="form-control" name="issueTitleN" maxlength="50"/>
@@ -133,20 +144,20 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-4" style="padding:5px 5px 5px 15px">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<input type="text" class="form-control" name="ownerN"/>
 									<span class="input-group-addon">负责</span>
 								</div>
 							</div>
-							<div class="col-md-4" style="padding:5px 0">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">每</span>
 									<input type="text" class="form-control" name="remindFreqN"/>
 									<span class="input-group-addon">天提醒</span>
 								</div>
 							</div>
-							<div class="col-md-4" style="padding:5px 15px 5px 5px">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<input type='text' class="form-control" id='deadLineN'/>
 									<span class="input-group-addon">到期</span>
@@ -154,12 +165,16 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<textarea class="form-control" rows="4" placeholder="详细描述" maxlength="500" name="issueDetailN"></textarea>
 							</div>
 						</div>
 						<div class="alert alert-warning" role="alert" style="margin:0;padding:5px;display:none" id="createmsg"></div>
-						<div class="row"><div class="col-md-12" style="padding:5px 15px"><button type="button" class="btn btn-primary btn-block" id="createbtn">创建</button></div></div>
+						<div class="row">
+							<div class="col-md-12" style="padding:2px">
+								<button type="button" class="btn btn-primary btn-block" id="createbtn">创建</button>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -173,9 +188,9 @@
 						<h4 class="modal-title">事项信息</h4>
 						<input type="hidden" name="issueIdD" />
 					</div>
-					<div class="modal-body">
+					<div class="modal-body" style="padding:15px 30px">
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">事项简述</span>
 									<input type="text" class="form-control" name="issueTitleD" maxlength="50" readonly/>
@@ -183,20 +198,20 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-4" style="padding:5px 5px 5px 15px">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<input type="text" class="form-control" name="ownerD" readonly/>
 									<span class="input-group-addon">负责</span>
 								</div>
 							</div>
-							<div class="col-md-4" style="padding:5px 0">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">每</span>
 									<input type="text" class="form-control" name="remindFreqD" readonly/>
 									<span class="input-group-addon">天提醒</span>
 								</div>
 							</div>
-							<div class="col-md-4" style="padding:5px 15px 5px 5px">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<input type='text' class="form-control" id='deadlineD' readonly/>
 									<span class="input-group-addon">到期</span>
@@ -204,13 +219,13 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-4" style="padding:5px 5px 5px 15px">
+							<div class="col-md-4" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">状态</span>
 									<input type="text" class="form-control" name="stateD" readonly/>
 								</div>
 							</div>
-							<div class="col-md-8" style="padding:5px 15px 5px 0px">
+							<div class="col-md-8" style="padding:2px">
 								<div class="input-group">
 									<span class="input-group-addon">关注人</span>
 									<input type="text" class="form-control" name="followerD" readonly/>
@@ -218,54 +233,54 @@
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<textarea class="form-control" rows="4" placeholder="详细描述" maxlength="500" name="issueDetailD" readonly></textarea>
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<textarea class="form-control" rows="4" placeholder="进展说明" maxlength="500" name="progressD" readonly></textarea>
 							</div>
 						</div>
 						<div class="row">
-							<div class="col-md-12" style="padding:5px 15px">
+							<div class="col-md-12" style="padding:2px">
 								<p id="creatorD" style="text-align:right"></p>
 							</div>
 						</div>
-						<div class="alert alert-warning" role="alert" style="margin:0;padding:5px;display:none" id="updatemsg"></div>
+						<div class="alert alert-warning" role="alert" style="margin:0;padding:2px;display:none" id="updatemsg"></div>
 						<div class="row" id="creatorOps" style="display:none">
-							<div class="col-md-3" style="padding:5px 5px 5px 15px">
+							<div class="col-md-3" style="padding:2px">
 								<button type="button" class="btn btn-primary btn-block" id="modifybtn">修改</button>
 							</div>
-							<div class="col-md-2" style="padding:5px">
+							<div class="col-md-2" style="padding:2px">
 								<button type="button" class="btn btn-warning btn-block" id="reopenbtn">重开</button>
 							</div>
-							<div class="col-md-3" style="padding:5px">
+							<div class="col-md-3" style="padding:2px">
 								<button type="button" class="btn btn-warning btn-block" id="closebtn">关闭</button>
 							</div>
-							<div class="col-md-2" style="padding:5px">
+							<div class="col-md-2" style="padding:2px">
 								<button type="button" class="btn btn-warning btn-block" id="urgebtn">催促</button>
 							</div>
-							<div class="col-md-2" style="padding:5px 15px 5px 5px">
+							<div class="col-md-2" style="padding:2px">
 								<button type="button" class="btn btn-danger btn-block" id="cancelbtn">取消</button>
 							</div>
 						</div>
 						<div class="row" id="ownerOps" style="display:none">
-							<div class="col-md-4" style="padding:5px 5px 5px 15px">
+							<div class="col-md-4" style="padding:2px">
 								<button type="button" class="btn btn-success btn-block" id="acknowledgebtn">确认接收</button>
 							</div>
-							<div class="col-md-4" style="padding:5px">
+							<div class="col-md-4" style="padding:2px">
 								<button type="button" class="btn btn-primary btn-block" id="updatebtn">更新进展</button>
 							</div>
-							<div class="col-md-4" style="padding:5px 15px 5px 5px">
+							<div class="col-md-4" style="padding:2px">
 								<button type="button" class="btn btn-success btn-block" id="completebtn">反馈完成</button>
 							</div>
 						</div>
 						<div class="row" id="otherOps" style="display:none">
-							<div class="col-md-6" style="padding:5px 5px 5px 15px">
+							<div class="col-md-6" style="padding:2px">
 								<button type="button" class="btn btn-success btn-block" id="followbtn" disabled>关注</button>
 							</div>
-							<div class="col-md-6" style="padding:5px 15px 5px 5px">
+							<div class="col-md-6" style="padding:2px">
 								<button type="button" class="btn btn-danger btn-block" id="unfollowbtn" disabled>取消关注</button>
 							</div>
 						</div>
