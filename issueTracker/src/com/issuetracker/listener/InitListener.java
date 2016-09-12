@@ -36,6 +36,7 @@ import com.issuetracker.notice.RemindJob;
 import com.issuetracker.notice.ReportJob;
 import com.issuetracker.notice.SMSConsumer;
 import com.issuetracker.notice.TaskQueues;
+import com.issuetracker.service.TagService;
 import com.issuetracker.util.CacheUtil;
 import com.issuetracker.util.ContextManager;
 import com.issuetracker.util.PropertiesUtil;
@@ -140,6 +141,10 @@ public class InitListener implements ServletContextListener {
 						users[i] = user.getString("name")+"("+user.getString("userName")+")";
 					}
 					CacheUtil.users = users;
+					
+					log.debug("更新标签信息缓存...");
+					TagService.renewTagCache();
+					
 					log.debug("更新配置文件...");
 					InputStream in = this.getClass().getClassLoader().getResourceAsStream("issueTracker.properties");
 			        Properties p = new Properties();

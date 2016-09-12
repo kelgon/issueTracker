@@ -6,5 +6,7 @@
 	
 	<bean id="us" class="com.issuetracker.service.UserService" />
 	<bean id="is" class="com.issuetracker.service.IssueService" />
+	<bean id="ts" class="com.issuetracker.service.TagService" />
+	<bean id="cs" class="com.issuetracker.service.CommonService" />
 
 </beans>

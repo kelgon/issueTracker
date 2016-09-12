@@ -12,6 +12,7 @@ public class Issue {
 	private String progress;
 	private int remindFreq;
 	private String[] follower;
+	private String[] tags;
 	public String getOid() {
 		return oid;
 	}
@@ -77,5 +78,11 @@ public class Issue {
 	}
 	public void setProgress(String progress) {
 		this.progress = progress;
+	}
+	public String[] getTags() {
+		return tags;
+	}
+	public void setTags(String[] tags) {
+		this.tags = tags;
 	}
 }

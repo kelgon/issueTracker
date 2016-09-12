@@ -3,6 +3,7 @@ package com.issuetracker.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class IssueService {
 		String remindFreq = request.getParameter("remindFreq");
 		String deadline = request.getParameter("deadline");
 		String issueDetail = request.getParameter("issueDetail");
+		String tags = request.getParameter("tags");
 		
 		if(StringUtils.isBlank(issueTitle) || StringUtils.isBlank(ownerS) || StringUtils.isBlank(deadline)) {
 			return JSON.toJSONString(new RetMsg("1","invalid param(s)"));
@@ -50,7 +52,6 @@ public class IssueService {
 				return JSON.toJSONString(new RetMsg("1","提醒周期格式错误"));
 			}
 		}
-		
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 		Date deadLineD;
 		try {
@@ -58,15 +59,24 @@ public class IssueService {
 		} catch (ParseException e) {
 			return JSON.toJSONString(new RetMsg("1","到期日格式错误"));
 		}
-		Date date = new Date();
+		String[] tag = null;
+		if(StringUtils.isNotBlank(tags)) {
+			tag = tags.split(",");
+		}
+		
+		
 		log.info("事项信息校验通过，开始创建...");
+		Date date = new Date();
 		Document user = ((Document)request.getSession().getAttribute("user"));
 		Document creator = new Document("userName", user.getString("userName")).append("name", user.getString("name"));
 		Document owner = new Document("userName", ownerUserName).append("name", ownerName);
-		String objId = MongoDBUtil.insert("issue", new Document("issueTitle", issueTitle).append("owner", owner)
+		Document filter = new Document("issueTitle", issueTitle).append("owner", owner)
 				.append("deadline", deadLineD).append("creator", creator).append("remindFreq", remindFreqI)
 				.append("issueDetail", issueDetail).append("createDate", date).append("state", "新建")
-				.append("lastRemind", date)).toString();
+				.append("lastRemind", date);
+		if(tag != null)
+			filter.append("tags", Arrays.asList(tag));
+		String objId = MongoDBUtil.insert("issue", filter).toString();
 		
 		log.info("事项创建成功，ID："+objId);
 		
@@ -83,6 +93,7 @@ public class IssueService {
 		String remindFreq = request.getParameter("remindFreq");
 		String deadline = request.getParameter("deadline");
 		String issueDetail = request.getParameter("issueDetail");
+		String tags = request.getParameter("tags");
 
 		Document user = ((Document)request.getSession().getAttribute("user"));
 		Document issue = MongoDBUtil.findOne("issue", new Document("_id", new ObjectId(id)));
@@ -111,10 +122,20 @@ public class IssueService {
 		} catch (ParseException e) {
 			return JSON.toJSONString(new RetMsg("1","到期日格式错误"));
 		}
+		String[] tag = null;
+		if(StringUtils.isNotBlank(tags)) {
+			tag = tags.split(",");
+		}
 		
 		log.info("待更新事项信息校验通过，开始更新...");
-		long updated = MongoDBUtil.update("issue", new Document("_id", new ObjectId(id)), new Document("$set",
-				new Document("deadline", deadLineD).append("remindFreq", remindFreqI).append("issueDetail", issueDetail)));
+		Document update = null;
+		if(tag == null)
+			update = new Document("$set", new Document("deadline", deadLineD).append("remindFreq", remindFreqI)
+					.append("issueDetail", issueDetail)).append("$unset", new Document("tags",""));
+		else
+			update = new Document("$set", new Document("deadline", deadLineD).append("remindFreq", remindFreqI)
+					.append("issueDetail", issueDetail).append("tags", Arrays.asList(tag)));
+		long updated = MongoDBUtil.update("issue", new Document("_id", new ObjectId(id)), update);
 
 		MongoDBUtil.insert("notice", new Document("type", "modify").append("issue", id).append("report", "true")
 				.append("date", new Date()).append("operator", user.getString("userName")));
@@ -125,6 +146,7 @@ public class IssueService {
 	public String getIssues(HttpServletRequest request) {
 		String choice = request.getParameter("choice");
 		String page = request.getParameter("page");
+		String tags = request.getParameter("tags");
 		if(StringUtils.isBlank(choice)) {
 			return JSON.toJSONString(new RetMsg("1","invalid param(s)"));
 		}
@@ -137,8 +159,15 @@ public class IssueService {
 		}
 		if(pageNo < 1)
 			pageNo = 1;
+
+		String[] tag = null;
+		if(StringUtils.isNotBlank(tags)) {
+			tag = tags.split(",");
+		}
 		
 		Document filter = null;
+		if(tag != null)
+			filter = new Document("tags", new Document("$all", Arrays.asList(tag)));
 		String userName = ((Document)request.getSession().getAttribute("user")).getString("userName");
 		if("created".equals(choice)) {
 			filter = new Document("creator.userName", userName);
@@ -159,31 +188,45 @@ public class IssueService {
 			return JSON.toJSONString(new RetMsg("1","invalid param(s)"));
 		} else {
 			Document issue = MongoDBUtil.findOne("issue", new Document("_id", new ObjectId(id)));
-			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy/MM/dd");
-			Issue is = new Issue();
-			is.setOid(issue.getObjectId("_id").toString());
-			is.setTitle(issue.getString("issueTitle"));
-			is.setState(issue.getString("state"));
-			Document owner = (Document)issue.get("owner");
-			is.setOwner(owner.getString("name")+"("+owner.getString("userName")+")");
-			Document creator = (Document)issue.get("creator");
-			is.setCreator(creator.getString("name")+"("+creator.getString("userName")+")");
-			is.setCreateDate(sdf1.format(issue.getDate("createDate")));
-			is.setDeadline(sdf2.format(issue.getDate("deadline")));
-			is.setDetail(issue.getString("issueDetail"));
-			is.setRemindFreq(issue.getInteger("remindFreq"));
-			is.setProgress(issue.getString("progress"));
-			List<?> ofollow = (List<?>)issue.get("follower");
-			if(ofollow != null) {
-				List<String> fList = new ArrayList<String>();
-				for(Object of : ofollow) {
-					Document follower = (Document)of;
-					fList.add(follower.getString("name")+"("+follower.getString("userName")+")");
+			if(issue != null) {
+				SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy/MM/dd");
+				Issue is = new Issue();
+				is.setOid(issue.getObjectId("_id").toString());
+				is.setTitle(issue.getString("issueTitle"));
+				is.setState(issue.getString("state"));
+				Document owner = (Document)issue.get("owner");
+				is.setOwner(owner.getString("name")+"("+owner.getString("userName")+")");
+				Document creator = (Document)issue.get("creator");
+				is.setCreator(creator.getString("name")+"("+creator.getString("userName")+")");
+				is.setCreateDate(sdf1.format(issue.getDate("createDate")));
+				is.setDeadline(sdf2.format(issue.getDate("deadline")));
+				is.setDetail(issue.getString("issueDetail"));
+				is.setRemindFreq(issue.getInteger("remindFreq"));
+				is.setProgress(issue.getString("progress"));
+				List<?> ofollow = (List<?>)issue.get("follower");
+				if(ofollow != null) {
+					List<String> fList = new ArrayList<String>();
+					for(Object of : ofollow) {
+						Document follower = (Document)of;
+						fList.add(follower.getString("name")+"("+follower.getString("userName")+")");
+					}
+					is.setFollower(fList.toArray(new String[0]));
 				}
-				is.setFollower(fList.toArray(new String[0]));
+				List<?> tags = (List<?>)issue.get("tags");
+				if(tags != null) {
+					List<String> tList = new ArrayList<String>();
+					for(Object ot : tags) {
+						String tag = (String)ot;
+						tList.add(tag);
+					}
+					is.setTags(tList.toArray(new String[0]));
+				}
+				
+				return JSON.toJSONString(new RetMsg("0","ok",is));
+			} else {
+				return JSON.toJSONString(new RetMsg("1","指定事项不存在"));
 			}
-			return JSON.toJSONString(new RetMsg("0","ok",is));
 		}
 	}
 	
@@ -202,6 +245,15 @@ public class IssueService {
 			is.setCreator(creator.getString("name")+"("+creator.getString("userName")+")");
 			is.setCreateDate(sdf1.format(issue.getDate("createDate")));
 			is.setDeadline(sdf2.format(issue.getDate("deadline")));
+			List<?> tags = (List<?>)issue.get("tags");
+			if(tags != null) {
+				List<String> tList = new ArrayList<String>();
+				for(Object ot : tags) {
+					String tag = (String)ot;
+					tList.add(tag);
+				}
+				is.setTags(tList.toArray(new String[0]));
+			}
 			iList.add(is);
 		}
 		return iList;
