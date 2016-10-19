@@ -67,6 +67,23 @@ public class NoticeProducer extends Thread {
 									+"分派给您一个新任务["+issue.getString("issueTitle")+"]，请关注，该任务将于"
 									+sdf2.format(issue.getDate("deadline"))+"逾期。"+PropertiesUtil.getFileProp("mail.sign"));
 							TaskQueues.emailQueue.offer(emailTask);
+						} else if("forward".equals(notice.getString("type"))) {
+							SMSTask smsTask = new SMSTask();
+							smsTask.setNoticeId(notice.getObjectId("_id").toString());
+							smsTask.setPhone(owner.getString("phone"));
+							smsTask.setMsg(owner.getString("name")+"您好，"+notice.getString("operator")+"转派给您一个任务["
+									+issue.getString("issueTitle")+"]，请关注，该任务将于"+sdf2.format(issue.getDate("deadline"))
+									+"逾期【iTracker】");
+							TaskQueues.smsQueue.offer(smsTask);
+							EmailTask emailTask = new EmailTask();
+							emailTask.setNoticeId(notice.getObjectId("_id").toString());
+							emailTask.setTitle("【iTracker】任务["+issue.getString("issueTitle")+"]转派提醒");
+							emailTask.setReceivers(new String[] {owner.getString("email")});
+							emailTask.setCopies(new String[] {creator.getString("email")});
+							emailTask.setContent(owner.getString("name")+"，您好：\r\n    "+notice.getString("operator")
+									+"转派给您一个任务["+issue.getString("issueTitle")+"]，请关注，该任务将于"
+									+sdf2.format(issue.getDate("deadline"))+"逾期。"+PropertiesUtil.getFileProp("mail.sign"));
+							TaskQueues.emailQueue.offer(emailTask);
 						} else if("close".equals(notice.getString("type"))) {
 							EmailTask emailTask = new EmailTask();
 							emailTask.setTitle("【iTracker】任务["+issue.getString("issueTitle")+"]关闭提醒");
@@ -135,13 +152,8 @@ public class NoticeProducer extends Thread {
 								new Document("$set", new Document("dealState","已处理")));
 					}
 				}
-				log.info("提醒队列任务添加完成");
 			} catch(Throwable t) {
 				log.error("提醒生产者线程出错", t);
-			}
-			try {
-				Thread.sleep(5000);
-			} catch (InterruptedException e) {
 			}
 		}
 	}

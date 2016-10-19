@@ -178,7 +178,7 @@ public class IssueService {
 		}
 		int pcount = Integer.parseInt(PropertiesUtil.getFileProp("page.records"));
 		List<Document> issueList = MongoDBUtil.find("issue", filter, new Document("createDate", -1) , 
-				(pageNo-1)*pcount, pageNo*pcount);
+				(pageNo-1)*pcount, pcount);
 		return JSON.toJSONString(new RetMsg("0","ok", convert2IssueList(issueList)));
 	}
 	
@@ -493,5 +493,31 @@ public class IssueService {
 		log.info("责任人催促事项进展"+id);
 
 		return JSON.toJSONString(new RetMsg("0","success"));
+	}
+	
+	public String forwardIssue(HttpServletRequest request) {
+		String id = request.getParameter("oid");
+		String ownerS = request.getParameter("owner");
+		
+		String[] ownerT = ownerS.split("\\(");
+		if(ownerT.length != 2 || !ownerS.endsWith(")")) {
+			return JSON.toJSONString(new RetMsg("1","负责人信息格式错误"));
+		}
+		String ownerUserName = ownerT[1].split("\\)")[0];
+		String ownerName = ownerT[0];
+		Document owner = new Document("userName", ownerUserName).append("name", ownerName);
+		Document user = ((Document)request.getSession().getAttribute("user"));
+		
+		long updated = MongoDBUtil.update("issue", new Document("_id", new ObjectId(id)), new Document("$set", 
+				new Document("owner", owner)).append("$addToSet", new Document("follower", 
+				new Document("userName",user.getString("userName")).append("name", user.getString("name")))));
+
+		log.info(user.getString("userName") + "将事项"+id+"转派给"+owner.getString("userName"));
+
+		MongoDBUtil.insert("notice", new Document("type", "forward").append("issue", id).append("smsState", "新建")
+				.append("emailState","新建").append("report", "true").append("dealState", "新建")
+				.append("date", new Date()).append("operator", user.getString("userName")));
+		
+		return JSON.toJSONString(new RetMsg("0","success", updated));
 	}
 }
