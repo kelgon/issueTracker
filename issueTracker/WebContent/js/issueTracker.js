@@ -15,6 +15,7 @@ $("#chgpwdbtn").click(chgpasswd);
 $('#deadLineN').datetimepicker({format:"YYYY/MM/DD"});
 $('#deadlineD').datetimepicker({format:"YYYY/MM/DD"});
 $("#createbtn").click(createIssue);
+$("#forwardbtn").click(forwardIssue);
 $("#getCreatedBtn").click(function() {
 	curPage = 1;
 	curChoice = 'created';
@@ -57,6 +58,13 @@ $("ul.pagination li:last a").click(function() {
 });
 $("#newtagbtn").click(createTag);
 
+var needReload = false;
+$('#issueDetailPanel').on('hidden.bs.modal', function (e) {
+	if(needReload) {
+		getIssues(curChoice, curPage);
+		needReload = false;
+	}
+});
 
 $("#loading").modal();
 
@@ -96,46 +104,69 @@ function initTypeahead() {
 			$("input[name='creatorS']").typeahead({source:data.users});
 			$("input[name='ownerD']").typeahead({source:data.users});
 			$("input[name='creatorD']").typeahead({source:data.users});
-			tagsTypeahead("N", data.tags);
-			tagsTypeahead("D", data.tags);
-			tagsTypeahead("S", data.tags);
+			//tagsTypeahead("N", data.tags);
+			//tagsTypeahead("D", data.tags);
+			//tagsTypeahead("S", data.tags);
+			$("#addTagBtnS").popover({
+				html: true,
+				placement: "bottom",
+				trigger: "click",
+				title: "选择标签",
+				content: function () {
+					return genTags(data.tags, "S");
+				}
+			});
+			$("#addTagBtnN").popover({
+				html: true,
+				placement: "right",
+				trigger: "click",
+				title: "选择标签",
+				content: function () {
+					return genTags(data.tags, "N");
+				}
+			});
+			$("#addTagBtnD").popover({
+				html: true,
+				placement: "right",
+				trigger: "click",
+				title: "选择标签",
+				content: function () {
+					return genTags(data.tags, "D");
+				}
+			});
 		}
 	});
 }
 
-function tagsTypeahead(t, source) {
+function genTags(tags, t) {
+	var content = $("<div style='width:200px'></div>");
 	var tagDiv = "tagDiv"+t;
-	var tagInput = "addTags"+t;
-	$("#"+tagInput).typeahead({
-		source: source,
-		showHintOnFocus: true,
-		updater: function (item) {
-			var tag = $("<span class='label label-primary tag' title='点击移除'>"+item+"</span>");
-			tag.click(function() {
+	for(var i=0; i<tags.length; i++) {
+		var tag = $("<span class='label label-primary tag' style='display:inline-block'>"+tags[i]+"</span>");
+		tag.click(function () {
+			var tag2go = $("<span class='label label-primary tag' title='点击移除'>"+$(this).html()+"</span>");
+			tag2go.click(function() {
 				$(this).remove();
 			})
-			var tags = $("#"+tagDiv+" span");
-			if(tags.length >= 5) {
+			var cTags = $("#"+tagDiv+" span");
+			if(cTags.length >= 5) {
 				alert("最多可以设置5个标签");
 				return "";
 			}
 			var has = false;
-			for(var i=0; i<tags.length; i++) {
-				if(tag.html() == $(tags.get(i)).html()) {
+			for(var i=0; i<cTags.length; i++) {
+				if($(this).html() == $(cTags.get(i)).html()) {
 					has = true;
 					break;
 				}
 			}
 			if(!has) {
-				$("#"+tagDiv).append(tag);
+				$("#"+tagDiv).append(tag2go);
 			}
-			$("#"+tagInput).blur();
-			return "";
-		}
-	});
-	$("#"+tagInput).blur(function (){
-		$(this).typeahead('hide');
-	});
+		});
+		content.append(tag);
+	}
+	return content;
 }
 
 function login() {
@@ -144,7 +175,7 @@ function login() {
 	$.ajax({
 		url: "s", 
 		method: "post",
-		data: "bn=us&mn=login&userName="+userName+"&pwd="+$("input[name='pwd']").val(),
+		data: "bn=us&mn=login&userName="+userName+"&pwd="+encodeURIComponent($("input[name='pwd']").val()),
 		cache: false, 
 		dataType: "json",
 		contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -211,7 +242,8 @@ function chgpasswd() {
 	$.ajax({
 		url: "s", 
 		method: "post",
-		data: "bn=us&mn=chgpasswd&oldpwd="+oldpwd.val()+"&newpwd="+newpwd.val(),
+		data: "bn=us&mn=chgpasswd&oldpwd="+encodeURIComponent(oldpwd.val())+"&newpwd="
+			+encodeURIComponent(newpwd.val()),
 		cache: false, 
 		dataType: "json",
 		contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -234,7 +266,7 @@ function createIssue() {
 	var remindFreq = $("input[name='remindFreqN']");
 	var deadline = $("#deadLineN");
 	var issueDetail = $("textarea[name='issueDetailN']");
-	var reg = new RegExp("^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9]+[\)]$", "g");
+	var reg = new RegExp("^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9_]+[\)]$", "g");
 	var valid = true;
 	if(owner.val().match(reg) == null) {
 		owner.parent().addClass("has-error");
@@ -264,8 +296,9 @@ function createIssue() {
 		$.ajax({
 			url: "s", 
 			method: "post",
-			data: "bn=is&mn=newIssue&issueTitle="+issueTitle.val()+"&owner="+owner.val()+"&remindFreq="
-				+remindFreq.val()+"&deadline="+deadline.val()+"&issueDetail="+issueDetail.val()+"&tags="+tagsP,
+			data: "bn=is&mn=newIssue&issueTitle="+encodeURIComponent(issueTitle.val())+"&owner="+owner.val()
+				+"&remindFreq="+remindFreq.val()+"&deadline="+deadline.val()+"&issueDetail="
+				+encodeURIComponent(issueDetail.val())+"&tags="+tagsP,
 			cache: false, 
 			dataType: "json",
 			contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -338,7 +371,6 @@ function showIssue() {
 	$("#loading").modal();
 	$("#issueDetailPanel input[type='text']").prop("readonly",true);
 	$("#issueDetailPanel textarea").prop("readonly",true);
-	$("#addTagsD").prop("disabled",true);
 	$("#modifybtn").html("修改");
 	$("#updatemsg").hide();
 	$("#creatorOps").hide();
@@ -410,6 +442,7 @@ function showIssue() {
 
 function checkBtnEnable(state) {
 	$("#issueDetailPanel button.btn").prop("disabled",false);
+	$("#addTagBtnD").prop("disabled",true);
 	if(state == "已关闭") {
 		$("#issueDetailPanel button.btn").prop("disabled",true);
 		$("#reopenbtn").prop("disabled",false);
@@ -420,16 +453,19 @@ function checkBtnEnable(state) {
 	if(state == "已接收") {
 		$("#acknowledgebtn").prop("disabled",true);
 		$("#reopenbtn").prop("disabled",true);
+		$("#forwardbtn").prop("disabled",true);
 	}
 	if(state == "进行中") {
 		$("#acknowledgebtn").prop("disabled",true);
 		$("#reopenbtn").prop("disabled",true);
+		$("#forwardbtn").prop("disabled",true);
 	}
 	if(state == "已完成") {
 		$("#acknowledgebtn").prop("disabled",true);
 		$("#updatebtn").prop("disabled",true);
 		$("#completebtn").prop("disabled",true);
 		$("#urgebtn").prop("disabled",true);
+		$("#forwardbtn").prop("disabled",true);
 	}
 	if(state == "新建" || state == "重开") {
 		$("#updatebtn").prop("disabled",true);
@@ -444,8 +480,6 @@ function modifyIssue() {
 		$("input[name='remindFreqD'").prop("readonly",false);
 		$("#deadlineD").prop("readonly",false);
 		$("textarea[name='issueDetailD'").prop("readonly",false);
-		$("#addTagsD").prop("disabled",false);
-		$("#addTagsD").prop("readonly",false);
 		$("#issueDetailPanel .tag").click(function() {
 			$(this).remove();
 		})
@@ -453,6 +487,7 @@ function modifyIssue() {
 		$("#issueDetailPanel button.btn").prop("disabled",true);
 		$("#modifybtn").html("提交");
 		$("#modifybtn").prop("disabled",false);
+		$("#addTagBtnD").prop("disabled",false);
 	} else {
 		$("#modifybtn").html("提交中...");
 		$("#modifybtn").prop("disabled", true);
@@ -466,9 +501,9 @@ function modifyIssue() {
 		$.ajax({
 			url: "s", 
 			method: "post",
-			data: "bn=is&mn=modifyIssue&oid="+$("input[name='issueIdD']").val()+"&remindFreq="
-				+$("input[name='remindFreqD']").val()+"&deadline="+$("#deadlineD").val()+
-				"&issueDetail="+$("textarea[name='issueDetailD'").val()+"&tags="+tagsP,
+			data: "bn=is&mn=modifyIssue&oid="+$("input[name='issueIdD']").val()
+					+"&remindFreq="+$("input[name='remindFreqD']").val()+"&deadline="+$("#deadlineD").val()
+					+"&issueDetail="+encodeURIComponent($("textarea[name='issueDetailD'").val())+"&tags="+tagsP,
 			cache: false, 
 			dataType: "json",
 			contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -480,6 +515,7 @@ function modifyIssue() {
 					$("#modifybtn").html("修改");
 					checkBtnEnable($("input[name='stateD']").val());
 					modifyOpen = false;
+					needReload = true;
 				} else {
 					$("#updatemsg").html(data.retMsg);
 					$("#updatemsg").show();
@@ -507,6 +543,7 @@ function closeIssue() {
 				$("#closebtn").html("关闭");
 				$("input[name='stateD'").val("已关闭");
 				checkBtnEnable($("input[name='stateD']").val());
+				needReload = true;
 			} else {
 				$("#updatemsg").html(data.retMsg);
 				$("#updatemsg").show();
@@ -516,7 +553,9 @@ function closeIssue() {
 }
 
 function cancelIssue() {
-	$("#cancelbtn").html("提交中...");
+	if(!confirm("事项取消后不可恢复，确认要取消吗？"))
+		return;
+	$("#cancelbtn").html("取消中...");
 	$.ajax({
 		url: "s", 
 		method: "post",
@@ -525,9 +564,10 @@ function cancelIssue() {
 		dataType: "json",
 		contentType: "application/x-www-form-urlencoded; charset=utf-8",
 		success: function(data) {
-			$("#issueDetailPanel").modal("hide");
+			$("#cancelbtn").html("取消");
 			if(data.retCode == "0") {
-				$("#loading").modal("hide");
+				needReload = true;
+				$("#issueDetailPanel").modal("hide");
 			} else {
 				$("#updatemsg").html(data.retMsg);
 				$("#updatemsg").show();
@@ -552,6 +592,7 @@ function ackIssue() {
 			if(data.retCode == "0") {
 				$("input[name='stateD'").val("已接收");
 				checkBtnEnable($("input[name='stateD']").val());
+				needReload = true;
 			} else {
 				$("#updatemsg").html(data.retMsg);
 				$("#updatemsg").show();
@@ -578,8 +619,8 @@ function updateIssue() {
 		$.ajax({
 			url: "s", 
 			method: "post",
-			data: "bn=is&mn=updateIssue&oid="+$("input[name='issueIdD']").val()+"&progress="+
-				$("textarea[name='progressD']").val(),
+			data: "bn=is&mn=updateIssue&oid="+$("input[name='issueIdD']").val()+"&progress="
+				+encodeURIComponent($("textarea[name='progressD']").val()),
 			cache: false, 
 			dataType: "json",
 			contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -591,6 +632,7 @@ function updateIssue() {
 					$("input[name='stateD']").val("进行中");
 					updateOpen = false;
 					checkBtnEnable($("input[name='stateD']").val());
+					needReload = true;
 				} else {
 					$("#updatemsg").html(data.retMsg);
 					$("#updatemsg").show();
@@ -617,8 +659,8 @@ function completeIssue() {
 		$.ajax({
 			url: "s", 
 			method: "post",
-			data: "bn=is&mn=completeIssue&oid="+$("input[name='issueIdD']").val()+"&progress="+
-				$("textarea[name='progressD']").val(),
+			data: "bn=is&mn=completeIssue&oid="+$("input[name='issueIdD']").val()+"&progress="
+				+encodeURIComponent($("textarea[name='progressD']").val()),
 			cache: false, 
 			dataType: "json",
 			contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -630,6 +672,7 @@ function completeIssue() {
 					$("input[name='stateD']").val("已完成");
 					updateOpen = false;
 					checkBtnEnable($("input[name='stateD']").val());
+					needReload = true;
 				} else {
 					$("#updatemsg").html(data.retMsg);
 					$("#updatemsg").show();
@@ -656,8 +699,8 @@ function reopenIssue() {
 		$.ajax({
 			url: "s", 
 			method: "post",
-			data: "bn=is&mn=reopenIssue&oid="+$("input[name='issueIdD']").val()+"&issueDetail="+
-				$("textarea[name='issueDetailD']").val(),
+			data: "bn=is&mn=reopenIssue&oid="+$("input[name='issueIdD']").val()+"&issueDetail="
+				+encodeURIComponent($("textarea[name='issueDetailD']").val()),
 			cache: false, 
 			dataType: "json",
 			contentType: "application/x-www-form-urlencoded; charset=utf-8",
@@ -669,6 +712,7 @@ function reopenIssue() {
 					$("input[name='stateD']").val("重开");
 					checkBtnEnable($("input[name='stateD']").val());
 					modifyOpen = false;
+					needReload = true;
 				} else {
 					$("#updatemsg").html(data.retMsg);
 					$("#updatemsg").show();
@@ -777,6 +821,51 @@ function urgeIssue() {
 			}
 		}
 	});
+}
+
+var forwardOpen = false;
+function forwardIssue() {
+	if(!forwardOpen) {
+		$("input[name='ownerD'").prop("readonly",false);
+		$("#issueDetailPanel button.btn").prop("disabled",true);
+		$("#forwardbtn").html("提交");
+		$("#forwardbtn").prop("disabled",false);
+		forwardOpen = true;
+		$("input[name='ownerD']").val("");
+		$("input[name='ownerD']").focus();
+	} else {
+		var owner = $("input[name='ownerD']");
+		var reg = new RegExp("^[\u4e00-\u9fa5]{2,4}[\(][a-zA-Z0-9_]+[\)]$", "g");
+		var valid = true;
+		if(owner.val().match(reg) == null) {
+			owner.parent().addClass("has-error");
+			$("#createmsg").html("请使用自动完成功能填写负责人，不要手工填写");
+			$("#createmsg").show();
+			valid = false;
+		}
+		$("#forwardbtn").prop("disabled",true);
+		$("input[name='ownerD'").prop("readonly",true);
+		$.ajax({
+			url: "s", 
+			method: "post",
+			data: "bn=is&mn=forwardIssue&oid="+$("input[name='issueIdD']").val()+"&owner="+owner.val(),
+			cache: false, 
+			dataType: "json",
+			contentType: "application/x-www-form-urlencoded; charset=utf-8",
+			success: function(data) {
+				if(data.retCode == "0") {
+					alert("转派完成");
+					needReload = true;
+					$("#issueDetailPanel").modal('hide');
+				} else {
+					$("#updatemsg").html(data.retMsg);
+					$("#updatemsg").show();
+					$("#forwardbtn").html("转派");
+					$("#forwardbtn").prop("disabled",false);
+				}
+			}
+		});
+	}
 }
 
 function getAllTags() {

@@ -90,7 +90,7 @@
 						<div class="col-md-3" style="padding:9px 2px" id="tagDivS">
 						</div>
 						<div class="col-md-1" style="padding:2px">
-							<input type="text" class="form-control" id="addTagsS" placeholder="添加标签..." autocomplete="off"/>
+							<button type="button" class="btn btn-success btn-block" id="addTagBtnS">添加标签</button>
 						</div>
 					</div>
 				</div>
@@ -129,7 +129,7 @@
 							<div class="col-md-8" style="padding:2px" id="tagDivN">
 							</div>
 							<div class="col-md-3" style="padding:2px">
-								<input type="text" class="form-control" id="addTagsN" placeholder="添加标签..."/>
+								<button type="button" class="btn btn-success btn-block" id="addTagBtnN">添加标签</button>
 							</div>
 						</div>
 						<div class="row">
@@ -193,7 +193,7 @@
 							<div class="col-md-8" style="padding:2px" id="tagDivD">
 							</div>
 							<div class="col-md-3" style="padding:2px">
-								<input type="text" class="form-control" id="addTagsD" disabled placeholder="添加标签..."/>
+								<button type="button" class="btn btn-success btn-block" id="addTagBtnD">添加标签</button>
 							</div>
 						</div>
 						<div class="row">
@@ -273,14 +273,17 @@
 							</div>
 						</div>
 						<div class="row" id="ownerOps" style="display:none">
-							<div class="col-md-4" style="padding:2px">
+							<div class="col-md-3" style="padding:2px">
 								<button type="button" class="btn btn-success btn-block" id="acknowledgebtn">确认接收</button>
 							</div>
-							<div class="col-md-4" style="padding:2px">
+							<div class="col-md-3" style="padding:2px">
 								<button type="button" class="btn btn-primary btn-block" id="updatebtn">更新进展</button>
 							</div>
-							<div class="col-md-4" style="padding:2px">
+							<div class="col-md-3" style="padding:2px">
 								<button type="button" class="btn btn-success btn-block" id="completebtn">反馈完成</button>
+							</div>
+							<div class="col-md-3" style="padding:2px">
+								<button type="button" class="btn btn-warning btn-block" id="forwardbtn">转派</button>
 							</div>
 						</div>
 						<div class="row" id="otherOps" style="display:none">
