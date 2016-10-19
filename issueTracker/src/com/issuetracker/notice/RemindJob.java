@@ -52,10 +52,12 @@ public class RemindJob implements Job {
 									+PropertiesUtil.getFileProp("mail.sign"));
 						} else {
 							emailTask.setContent(owner.getString("name")+"，您好：\r\n    iTracker提醒您关注您负责的任务["
-									+issue.getString("issueTitle")+"]，该任务已于"+sdf.format(issue.getDate("deadline"))+"预期，"
+									+issue.getString("issueTitle")+"]，该任务已于"+sdf.format(issue.getDate("deadline"))+"逾期，"
 									+"请抓紧时间跟进。"+PropertiesUtil.getFileProp("mail.sign"));
 						}
 					}
+					MongoDBUtil.update("issue", new Document("_id", issue.getObjectId("_id")), 
+							new Document("$set", new Document("lastRemind", new Date())));
 					TaskQueues.emailQueue.offer(emailTask);
 				}
 			}

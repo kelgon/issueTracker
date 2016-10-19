@@ -39,7 +39,7 @@ public class EmailConsumer extends Thread {
 					MongoDBUtil.update("notice", new Document("_id", new ObjectId(task.getNoticeId())), 
 							new Document("$set", new Document("emailState", "成功")));
 				} else {
-					log.error("Email发送成功，收件人："+task.getReceivers()[0]);
+					log.info("Email发送成功，收件人："+task.getReceivers()[0]);
 				}
 			} catch(Throwable t) {
 				log.error("发送Email时出错", t);
